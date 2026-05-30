@@ -1,0 +1,103 @@
+{
+	"name": "pl_ingestion_sql_server",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data from sql to adls",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_sql_source",
+						"type": "DatasetReference",
+						"parameters": {
+							"database": {
+								"value": "@pipeline().parameters.Database",
+								"type": "Expression"
+							},
+							"table": {
+								"value": "@pipeline().parameters.table",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_adls_sink",
+						"type": "DatasetReference",
+						"parameters": {
+							"sinkFilename": {
+								"value": "@pipeline().parameters.filename",
+								"type": "Expression"
+							},
+							"sinkDirectory": {
+								"value": "@pipeline().parameters.directory",
+								"type": "Expression"
+							},
+							"sinkContainer": {
+								"value": "@pipeline().parameters.container",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"Database": {
+				"type": "string"
+			},
+			"table": {
+				"type": "string"
+			},
+			"filename": {
+				"type": "string"
+			},
+			"directory": {
+				"type": "string"
+			},
+			"container": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-05-01T18:48:22Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

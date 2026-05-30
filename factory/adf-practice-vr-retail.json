@@ -1,0 +1,15 @@
+{
+	"name": "adf-practice-vr-retail",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Enabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "8d1f6a5f-7ecb-41bb-98d3-6a02f42a9370",
+		"tenantId": "33857c78-e043-496d-8d5a-da92c4938988"
+	}
+}

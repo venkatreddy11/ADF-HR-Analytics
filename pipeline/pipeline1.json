@@ -1,0 +1,320 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"description": "Metadata-driven ingestion pipeline pulling from API, SFTP, and SQL Server sources into ADLS Gen2 landing.",
+		"activities": [
+			{
+				"name": "Lookup_Active_Sources",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT * FROM dbo.source_configs WHERE is_active = 1",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_AzureSQL_MetadataDB",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach_Active_Source",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Active_Sources",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_Active_Sources').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "Route_By_Source_Type",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().source_type",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "API",
+										"activities": [
+											{
+												"name": "Copy_API_Data",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "JsonSource",
+														"storeSettings": {
+															"type": "HttpReadSettings",
+															"requestMethod": "GET"
+														},
+														"formatSettings": {
+															"type": "JsonReadSettings"
+														}
+													},
+													"sink": {
+														"type": "JsonSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "JsonWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_Http_API_Source",
+														"type": "DatasetReference",
+														"parameters": {
+															"relative_url": "@item().source_relative_path"
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_Landing_JSON",
+														"type": "DatasetReference",
+														"parameters": {
+															"target_folder": "@item().target_folder_path",
+															"file_name": "@concat(item().source_name, '_', utcnow('yyyyMMdd_HHmmss'), '.json')"
+														}
+													}
+												]
+											}
+										]
+									},
+									{
+										"value": "SFTP",
+										"activities": [
+											{
+												"name": "Copy_SFTP_Data",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 1,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "SftpSource",
+														"recurse": true,
+														"modifiedDatetimeStart": {
+															"value": "@item().watermark_value",
+															"type": "Expression"
+														}
+													},
+													"sink": {
+														"type": "DelimitedTextSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "DelimitedTextWriteSettings",
+															"quoteAllText": true,
+															"fileExtension": ".txt",
+															"quoteChar": "\"",
+															"escapeChar": "\\",
+															"firstRowAsHeader": true
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_SFTP_Source",
+														"type": "DatasetReference",
+														"parameters": {
+															"folder_path": {
+																"value": "@item().source_relative_path",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_Landing_CSV",
+														"type": "DatasetReference",
+														"parameters": {
+															"target_folder": {
+																"value": "@item().target_folder_path",
+																"type": "Expression"
+															},
+															"file_name": {
+																"value": "@concat(item().source_name, '_', utcnow('yyyyMMdd_HHmmss'), '.csv')",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									},
+									{
+										"value": "SQL_SERVER",
+										"activities": [
+											{
+												"name": "Copy_SQL_Data",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 1,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "AzureSqlSource",
+														"sqlReaderQuery": {
+															"value": "@concat('SELECT * FROM ', item().source_relative_path, ' WHERE ', item().watermark_column, ' > ''', coalesce(item().watermark_value, '1900-01-01 00:00:00'), '''')",
+															"type": "Expression"
+														},
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_AzureSQL_SourceTable",
+														"type": "DatasetReference",
+														"parameters": {
+															"table_name": {
+																"value": "@item().source_relative_path",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_Landing_Parquet",
+														"type": "DatasetReference",
+														"parameters": {
+															"target_folder": {
+																"value": "@item().target_folder_path",
+																"type": "Expression"
+															},
+															"file_name": {
+																"value": "@concat(item().source_name, '_', utcnow('yyyyMMdd_HHmmss'), '.parquet')",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						},
+						{
+							"name": "Update_Metadata_Watermark",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "Route_By_Source_Type",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.00:10:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "LS_AzureSQLDatabase_Metadata",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "@concat('DECLARE @max_date VARCHAR(100);\nIF ''', item().source_type, ''' = ''SQL_SERVER''\nBEGIN\n    SELECT @max_date = CONVERT(VARCHAR(100), MAX(updated_at), 120) FROM ', item().source_relative_path, ';\n    IF @max_date IS NULL SET @max_date = ''', item().watermark_value, ''';\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = @max_date, @RunStatus = ''SUCCESS'';\nEND\nELSE\nBEGIN\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = ''', utcnow('yyyy-MM-dd HH:mm:ss'), ''', @RunStatus = ''SUCCESS'';\nEND')",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlock": {
+									"statements": [
+										{
+											"text": {
+												"value": "@concat('DECLARE @max_date VARCHAR(100);\nIF ''', item().source_type, ''' = ''SQL_SERVER''\nBEGIN\n    SELECT @max_date = CONVERT(VARCHAR(100), MAX(updated_at), 120) FROM ', item().source_relative_path, ';\n    IF @max_date IS NULL SET @max_date = ''', item().watermark_value, ''';\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = @max_date, @RunStatus = ''SUCCESS'';\nEND\nELSE\nBEGIN\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = ''', utcnow('yyyy-MM-dd HH:mm:ss'), ''', @RunStatus = ''SUCCESS'';\nEND')",
+												"type": "Expression"
+											},
+											"type": "Query"
+										}
+									]
+								},
+								"linkedServiceName": {
+									"referenceName": "LS_AzureSQLDatabase_Metadata",
+									"type": "LinkedServiceReference"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-05-28T09:23:55Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
