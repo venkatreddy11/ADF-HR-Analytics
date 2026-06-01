@@ -16,7 +16,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "@concat(dataset().folder_path, dataset().file_pattern)",
+					"value": "dataset().file_pattern",
 					"type": "Expression"
 				}
 			},
