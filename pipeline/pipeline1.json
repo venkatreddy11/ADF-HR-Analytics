@@ -142,8 +142,14 @@
 												"userProperties": [],
 												"typeProperties": {
 													"source": {
-														"type": "HttpSource",
-														"httpRequestTimeout": "00:05:00"
+														"type": "DelimitedTextSource",
+														"storeSettings": {
+															"type": "HttpReadSettings",
+															"requestMethod": "GET"
+														},
+														"formatSettings": {
+															"type": "DelimitedTextReadSettings"
+														}
 													},
 													"sink": {
 														"type": "DelimitedTextSink",
@@ -159,7 +165,15 @@
 															"firstRowAsHeader": true
 														}
 													},
-													"enableStaging": false
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
 												},
 												"inputs": [
 													{
@@ -169,7 +183,8 @@
 															"folder_path": {
 																"value": "@item().source_relative_path",
 																"type": "Expression"
-															}
+															},
+															"file_pattern": "@item().source_file_pattern"
 														}
 													}
 												],
