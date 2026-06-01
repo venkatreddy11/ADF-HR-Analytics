@@ -179,10 +179,6 @@
 														"referenceName": "DS_SFTP_Source",
 														"type": "DatasetReference",
 														"parameters": {
-															"folder_path": {
-																"value": "@item().source_relative_path",
-																"type": "Expression"
-															},
 															"file_pattern": "@item().source_file_pattern"
 														}
 													}
