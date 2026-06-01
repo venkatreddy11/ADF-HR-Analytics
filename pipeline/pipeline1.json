@@ -301,7 +301,12 @@
 								"type": "LinkedServiceReference"
 							},
 							"typeProperties": {
-								"scripts": [],
+								"scripts": [
+									{
+										"type": "Query",
+										"text": "@concat('DECLARE @max_date VARCHAR(100);\nIF ''', item().source_type, ''' = ''SQL_SERVER''\nBEGIN\n    SELECT @max_date = CONVERT(VARCHAR(100), MAX(updated_at), 120) FROM ', item().source_relative_path, ';\n    IF @max_date IS NULL SET @max_date = ''', item().watermark_value, ''';\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = @max_date, @RunStatus = ''SUCCESS'';\nEND\nELSE\nBEGIN\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = ''', utcnow('yyyy-MM-dd HH:mm:ss'), ''', @RunStatus = ''SUCCESS'';\nEND')"
+									}
+								],
 								"scriptBlock": {
 									"statements": [
 										{
