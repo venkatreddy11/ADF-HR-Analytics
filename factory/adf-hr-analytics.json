@@ -1,0 +1,15 @@
+{
+	"name": "adf-hr-analytics",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "37b96701-cb01-48a7-abf0-829cb5e67d85",
+		"tenantId": "bd325bdf-ad0b-44e3-9213-497d11521604"
+	}
+}
