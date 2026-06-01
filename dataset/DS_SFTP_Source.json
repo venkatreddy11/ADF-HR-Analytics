@@ -8,6 +8,9 @@
 		"parameters": {
 			"folder_path": {
 				"type": "string"
+			},
+			"file_pattern": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -16,7 +19,7 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "@dataset().folder_path",
+					"value": "@concat(dataset().folder_path, dataset().file_pattern)",
 					"type": "Expression"
 				}
 			},
@@ -26,6 +29,5 @@
 			"quoteChar": "\""
 		},
 		"schema": []
-	},
-	"type": "Microsoft.DataFactory/factories/datasets"
+	}
 }

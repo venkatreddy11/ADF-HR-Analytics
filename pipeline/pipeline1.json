@@ -76,10 +76,8 @@
 												"userProperties": [],
 												"typeProperties": {
 													"source": {
-														"type": "RestSource",
-														"httpRequestTimeout": "00:05:00",
-														"requestInterval": "00.00:00:00.010",
-														"requestMethod": "GET"
+														"type": "HttpSource",
+														"httpRequestTimeout": "00:05:00"
 													},
 													"sink": {
 														"type": "JsonSink",
@@ -134,20 +132,8 @@
 												"userProperties": [],
 												"typeProperties": {
 													"source": {
-														"type": "SftpSource",
-														"recurse": true,
-														"modifiedDatetimeStart": {
-															"value": "@item().watermark_value",
-															"type": "Expression"
-														},
-														"wildcardFolderPath": {
-															"value": "@item().source_relative_path",
-															"type": "Expression"
-														},
-														"wildcardFileName": {
-															"value": "@item().source_file_pattern",
-															"type": "Expression"
-														}
+														"type": "HttpSource",
+														"httpRequestTimeout": "00:05:00"
 													},
 													"sink": {
 														"type": "DelimitedTextSink",
@@ -193,111 +179,6 @@
 														}
 													}
 												]
-											},
-											{
-												"name": "Check_Archive_Enabled",
-												"type": "IfCondition",
-												"dependsOn": [
-													{
-														"activity": "Copy_SFTP_Data",
-														"dependencyConditions": [
-															"Succeeded"
-														]
-													}
-												],
-												"userProperties": [],
-												"typeProperties": {
-													"expression": {
-														"value": "@equals(item().enable_archiving, true)",
-														"type": "Expression"
-													},
-													"ifTrueActivities": [
-														{
-															"name": "Archive_Source_File",
-															"type": "Copy",
-															"dependsOn": [],
-															"policy": {
-																"timeout": "0.12:00:00",
-																"retry": 1,
-																"retryIntervalInSeconds": 30,
-																"secureOutput": false,
-																"secureInput": false
-															},
-															"userProperties": [],
-															"typeProperties": {
-																"source": {
-																	"type": "SftpSource",
-																	"recurse": true
-																},
-																"sink": {
-																	"type": "SftpSink"
-																},
-																"enableStaging": false
-															},
-															"inputs": [
-																{
-																	"referenceName": "DS_SFTP_Source",
-																	"type": "DatasetReference",
-																	"parameters": {
-																		"folder_path": {
-																			"value": "@item().source_relative_path",
-																			"type": "Expression"
-																		}
-																	}
-																}
-															],
-															"outputs": [
-																{
-																	"referenceName": "DS_SFTP_Source",
-																	"type": "DatasetReference",
-																	"parameters": {
-																		"folder_path": {
-																			"value": "@item().archive_folder_path",
-																			"type": "Expression"
-																		}
-																	}
-																}
-															]
-														},
-														{
-															"name": "Delete_Source_File",
-															"type": "Delete",
-															"dependsOn": [
-																{
-																	"activity": "Archive_Source_File",
-																	"dependencyConditions": [
-																		"Succeeded"
-																	]
-																}
-															],
-															"policy": {
-																"timeout": "0.12:00:00",
-																"retry": 1,
-																"retryIntervalInSeconds": 30,
-																"secureOutput": false,
-																"secureInput": false
-															},
-															"userProperties": [],
-															"typeProperties": {
-																"dataset": {
-																	"referenceName": "DS_SFTP_Source",
-																	"type": "DatasetReference",
-																	"parameters": {
-																		"folder_path": {
-																			"value": "@item().source_relative_path",
-																			"type": "Expression"
-																		}
-																	}
-																},
-																"enableLogging": false,
-																"storeSettings": {
-																	"type": "SftpReadSettings",
-																	"recursive": true
-																}
-															}
-														}
-													]
-												}
 											}
 										]
 									},
@@ -390,19 +271,22 @@
 								"secureInput": false
 							},
 							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "LS_AzureSQLDatabase_Metadata",
+								"type": "LinkedServiceReference"
+							},
 							"typeProperties": {
 								"scripts": [],
 								"scriptBlock": {
 									"statements": [
 										{
-											"text": "@concat('DECLARE @max_date VARCHAR(100);\nIF ''', item().source_type, ''' = ''SQL_SERVER''\nBEGIN\n    SELECT @max_date = CONVERT(VARCHAR(100), MAX(updated_at), 120) FROM ', item().source_relative_path, ';\n    IF @max_date IS NULL SET @max_date = ''', item().watermark_value, ''';\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = @max_date, @RunStatus = ''SUCCESS'';\nEND\nELSE\nBEGIN\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = ''', utcnow('yyyy-MM-dd HH:mm:ss'), ''', @RunStatus = ''SUCCESS'';\nEND')",
+											"text": {
+												"value": "@concat('DECLARE @max_date VARCHAR(100);\nIF ''', item().source_type, ''' = ''SQL_SERVER''\nBEGIN\n    SELECT @max_date = CONVERT(VARCHAR(100), MAX(updated_at), 120) FROM ', item().source_relative_path, ';\n    IF @max_date IS NULL SET @max_date = ''', item().watermark_value, ''';\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = @max_date, @RunStatus = ''SUCCESS'';\nEND\nELSE\nBEGIN\n    EXEC dbo.sp_update_watermark @SourceId = ', item().source_id, ', @NewWatermark = ''', utcnow('yyyy-MM-dd HH:mm:ss'), ''', @RunStatus = ''SUCCESS'';\nEND')",
+												"type": "Expression"
+											},
 											"type": "Query"
 										}
 									]
-								},
-								"linkedServiceName": {
-									"referenceName": "LS_AzureSQLDatabase_Metadata",
-									"type": "LinkedServiceReference"
 								}
 							}
 						}
