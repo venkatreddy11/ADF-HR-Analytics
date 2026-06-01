@@ -6,7 +6,10 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"relative_url": {
+			"folder_path": {
+				"type": "string"
+			},
+			"file_pattern": {
 				"type": "string"
 			}
 		},
@@ -16,12 +19,11 @@
 			"location": {
 				"type": "HttpServerLocation",
 				"relativeUrl": {
-					"value": "@dataset().relative_url",
+					"value": "@concat(dataset().folder_path, dataset().file_pattern)",
 					"type": "Expression"
 				}
 			}
 		},
 		"schema": {}
-	},
-	"type": "Microsoft.DataFactory/factories/datasets"
+	}
 }
