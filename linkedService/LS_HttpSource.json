@@ -4,7 +4,7 @@
 		"annotations": [],
 		"type": "HttpServer",
 		"typeProperties": {
-			"url": "https://sahara82.blob.core.windows.net/",
+			"url": "https://sahara82.blob.core.windows.net/external-sources/",
 			"enableServerCertificateValidation": true,
 			"authenticationType": "Anonymous"
 		}
