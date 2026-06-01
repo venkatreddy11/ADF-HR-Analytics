@@ -1,11 +1,11 @@
 {
 	"name": "LS_ADLSGen2_Landing",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"annotations": [],
 		"type": "AzureBlobFS",
 		"typeProperties": {
-			"url": "https://sachainproject.dfs.core.windows.net/"
+			"url": "https://sahara82.dfs.core.windows.net/"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
