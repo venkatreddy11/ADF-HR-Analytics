@@ -1,0 +1,112 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-hr-analytics"
+		},
+		"ls_adls_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_adls'"
+		},
+		"ls_azure_sql_reatil_db_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azure_sql_reatil_db'"
+		},
+		"LS_ADLSGen2_Landing_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://sahara82.dfs.core.windows.net/"
+		},
+		"LS_AzureSQLDatabase_Metadata_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sql-server-azure81.database.windows.net"
+		},
+		"LS_AzureSQLDatabase_Metadata_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "db-sql-hr"
+		},
+		"LS_HttpSource_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://sahara82.blob.core.windows.net/external-sources/"
+		},
+		"ls_adls_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://sachainproject.dfs.core.windows.net/"
+		},
+		"ls_azure_sql_reatil_db_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "retail-db-server-india.database.windows.net"
+		},
+		"ls_azure_sql_reatil_db_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "source-retail-orders"
+		},
+		"ls_azure_sql_reatil_db_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "vr_admin"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "adf-hr-analytics_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"ls_adls_accountKey": {
+						"value": "[parameters('ls_adls_accountKey')]"
+					},
+					"ls_azure_sql_reatil_db_password": {
+						"value": "[parameters('ls_azure_sql_reatil_db_password')]"
+					},
+					"LS_ADLSGen2_Landing_properties_typeProperties_url": {
+						"value": "[parameters('LS_ADLSGen2_Landing_properties_typeProperties_url')]"
+					},
+					"LS_AzureSQLDatabase_Metadata_properties_typeProperties_server": {
+						"value": "[parameters('LS_AzureSQLDatabase_Metadata_properties_typeProperties_server')]"
+					},
+					"LS_AzureSQLDatabase_Metadata_properties_typeProperties_database": {
+						"value": "[parameters('LS_AzureSQLDatabase_Metadata_properties_typeProperties_database')]"
+					},
+					"LS_HttpSource_properties_typeProperties_url": {
+						"value": "[parameters('LS_HttpSource_properties_typeProperties_url')]"
+					},
+					"ls_adls_properties_typeProperties_url": {
+						"value": "[parameters('ls_adls_properties_typeProperties_url')]"
+					},
+					"ls_azure_sql_reatil_db_properties_typeProperties_server": {
+						"value": "[parameters('ls_azure_sql_reatil_db_properties_typeProperties_server')]"
+					},
+					"ls_azure_sql_reatil_db_properties_typeProperties_database": {
+						"value": "[parameters('ls_azure_sql_reatil_db_properties_typeProperties_database')]"
+					},
+					"ls_azure_sql_reatil_db_properties_typeProperties_userName": {
+						"value": "[parameters('ls_azure_sql_reatil_db_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-hr-analytics"
+		},
+		"ls_adls_accountKey": {
+			"value": ""
+		},
+		"ls_azure_sql_reatil_db_password": {
+			"value": ""
+		},
+		"LS_ADLSGen2_Landing_properties_typeProperties_url": {
+			"value": "https://sahara82.dfs.core.windows.net/"
+		},
+		"LS_AzureSQLDatabase_Metadata_properties_typeProperties_server": {
+			"value": "sql-server-azure81.database.windows.net"
+		},
+		"LS_AzureSQLDatabase_Metadata_properties_typeProperties_database": {
+			"value": "db-sql-hr"
+		},
+		"LS_HttpSource_properties_typeProperties_url": {
+			"value": "https://sahara82.blob.core.windows.net/external-sources/"
+		},
+		"ls_adls_properties_typeProperties_url": {
+			"value": "https://sachainproject.dfs.core.windows.net/"
+		},
+		"ls_azure_sql_reatil_db_properties_typeProperties_server": {
+			"value": "retail-db-server-india.database.windows.net"
+		},
+		"ls_azure_sql_reatil_db_properties_typeProperties_database": {
+			"value": "source-retail-orders"
+		},
+		"ls_azure_sql_reatil_db_properties_typeProperties_userName": {
+			"value": "vr_admin"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
