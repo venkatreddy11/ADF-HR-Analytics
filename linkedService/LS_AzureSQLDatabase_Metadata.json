@@ -1,15 +1,15 @@
 {
 	"name": "LS_AzureSQLDatabase_Metadata",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"annotations": [],
 		"type": "AzureSqlDatabase",
 		"typeProperties": {
-			"server": "retail-db-server-india.database.windows.net",
-			"database": "HR-Analytics-Azure-DB",
+			"server": "sql-server-azure81.database.windows.net",
+			"database": "db-sql-hr",
 			"encrypt": "mandatory",
 			"trustServerCertificate": false,
 			"authenticationType": "SystemAssignedManagedIdentity"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
