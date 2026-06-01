@@ -76,8 +76,14 @@
 												"userProperties": [],
 												"typeProperties": {
 													"source": {
-														"type": "HttpSource",
-														"httpRequestTimeout": "00:05:00"
+														"type": "JsonSource",
+														"storeSettings": {
+															"type": "HttpReadSettings",
+															"requestMethod": "GET"
+														},
+														"formatSettings": {
+															"type": "JsonReadSettings"
+														}
 													},
 													"sink": {
 														"type": "JsonSink",
@@ -93,7 +99,11 @@
 												"inputs": [
 													{
 														"referenceName": "DS_Http_API_Source",
-														"type": "DatasetReference"
+														"type": "DatasetReference",
+														"parameters": {
+															"folder_path": "@item().source_relative_path",
+															"file_pattern": "@item().source_file_pattern"
+														}
 													}
 												],
 												"outputs": [
